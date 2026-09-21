@@ -13,14 +13,20 @@ Contact: frank.j@zyntaraai.com.au.
 Solutions:
 1. AI Workspaces — knowledge, client and matter intelligence, internal search, SOP search, project memory and role-aware operational copilots.
 2. Workflow Automation — OCR, documents, email, approvals, supplier RFQs and system integration.
-3. Operational Software — MES, WMS, production planning, procurement, dashboards and shop-floor data.
+3. Operational Software — custom workflow software, portals, case and job planning, operational dashboards, MES/WMS and practice-system integration.
 4. Forward Deployed Engineering — discovery, process mapping, rapid prototypes, integration, deployment and ongoing improvement.
 
 Approach:
 Discover the workflow and bottleneck. Build software around the real operation. Deploy into existing systems. Monitor, evaluate, improve and scale.
 
 Industries:
-Primary: manufacturing and industrial. Also legal and professional services, financial services and quantitative systems, and healthcare operations.
+Zyntara serves Australian small and medium businesses across manufacturing and industrial, legal and professional services, accounting and financial services, and healthcare operations. No single industry is the primary market; begin with the client's workflow and operating context.
+
+Representative industry workflows:
+- Legal and professional services: matter intake, precedent and knowledge search, document review support and client reporting.
+- Accounting and financial services: document processing, reconciliations, exception handling, reporting and research intelligence.
+- Healthcare operations: referral intake, rostering, capacity coordination, form processing and operational reporting. Zyntara does not make clinical decisions.
+- Manufacturing and industrial: planning, procurement, warehouse traceability and quality inspection.
 
 Selected work (client identities withheld):
 - Manufacturing Planning Copilot: projects, BOMs, material readiness, suppliers and production schedules; operational prototype.
@@ -29,6 +35,9 @@ Selected work (client identities withheld):
 - Offline Vision Quality Inspection: industrial cameras, OpenCV/YOLO, tool/PLC signals, sequence state machine and local traceability; solution architecture.
 - Market & News Intelligence Assistant: cited research briefs with human review; applied AI prototype.
 - Multi-Agent Quant Research Workflow: hypothesis, research tools, backtest, risk review and EA specification; research prototype. It does not provide investment advice or guarantee returns.
+- Matter Intelligence & Intake Workspace: representative solution for governed intake, permission-aware knowledge retrieval, cited drafts and lawyer review.
+- Finance Operations & Reporting Automation: representative solution for document capture, reconciliation exceptions, approvals and traceable reporting.
+- Referral Intake & Rostering Hub: representative solution for referral validation, capacity coordination, staff follow-up and role-based access. It does not provide clinical advice.
 
 Security and privacy positioning:
 Deployment and data architecture are designed around each client's security, privacy and operational requirements. Private cloud, customer-managed environments and local deployment can be supported where required. Never claim blanket compliance or promise that all data stays in a client's environment.

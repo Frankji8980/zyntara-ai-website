@@ -6,15 +6,22 @@ export function Work() {
   return (
     <>
       <PageShell
-        kicker="Selected work"
-        title="Engineering shaped around the operation."
+        kicker="Work & solution patterns"
+        title="Engineering shaped around real workflows."
       >
-        <p className="mb-20 max-w-2xl text-[18px] leading-relaxed sm:text-[22px]">
-          Selected work across manufacturing operations, financial
-          intelligence and quantitative research. Client identities are
-          withheld; project stages distinguish operational work from research
-          and solution architecture.
-        </p>
+        <div className="mb-20 grid gap-8 border-t border-black/15 pt-6 md:grid-cols-[1.3fr_0.7fr]">
+          <p className="max-w-2xl text-[18px] leading-relaxed sm:text-[22px]">
+            Selected work and representative delivery patterns across
+            manufacturing, legal, finance and healthcare operations. Each
+            project starts with the workflow, then connects the data, systems
+            and people needed to put it into production.
+          </p>
+          <p className="text-[13px] leading-relaxed text-black/55">
+            Client identities are withheld. Stage labels distinguish
+            operational work and prototypes from representative solutions
+            that show how the same engineering approach applies in Australia.
+          </p>
+        </div>
 
         <div className="space-y-28">
           {WORK_ITEMS.map((item) => (
@@ -76,7 +83,9 @@ export function Work() {
                 </div>
                 <div>
                   <p className="mb-3 text-[12px] uppercase tracking-[0.14em] text-black/45">
-                    Outcome
+                    {item.stage === 'Representative solution'
+                      ? 'Intended outcome'
+                      : 'Outcome'}
                   </p>
                   <p className="text-[15px] leading-relaxed sm:text-[17px]">
                     {item.outcome}
@@ -112,7 +121,7 @@ export function Work() {
             needs to improve.
           </p>
           <div className="flex flex-wrap gap-y-1">
-            <TextPill to="/industries">Manufacturing &amp; Industrial</TextPill>
+            <TextPill to="/industries">Explore industries</TextPill>
             <TextPill to="/contact">Discuss a deployment</TextPill>
             <EmailPill />
           </div>

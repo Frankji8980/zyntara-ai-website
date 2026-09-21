@@ -32,6 +32,14 @@ function HomeSection({
 }
 
 export function Home() {
+  const featuredWorkIds: ReadonlySet<string> = new Set([
+    'production-planning-copilot',
+    'legal-matter-intelligence',
+    'finance-operations-automation',
+    'healthcare-intake-roster',
+  ])
+  const featuredWork = WORK_ITEMS.filter((item) => featuredWorkIds.has(item.id))
+
   return (
     <div className="relative">
       <ScrubVideo />
@@ -63,13 +71,23 @@ export function Home() {
         </HomeSection>
 
         <section className="relative flex min-h-screen items-end overflow-hidden bg-black px-5 py-16 text-white sm:px-8 md:px-10 md:py-20">
-          <img
-            src="/images/industrial-operations.jpg"
-            alt="Manufacturing operations team overlooking a production floor"
-            className="absolute inset-0 h-full w-full object-cover object-center"
-            loading="lazy"
-          />
-          <div className="absolute inset-0 bg-gradient-to-r from-black via-black/55 to-black/10" />
+          <div className="absolute inset-0 grid grid-cols-2">
+            {[
+              '/images/industrial-operations.jpg',
+              '/images/legal-operations.jpg',
+              '/images/finance-operations.jpg',
+              '/images/healthcare-operations.jpg',
+            ].map((image) => (
+              <img
+                key={image}
+                src={image}
+                alt=""
+                className="h-full min-h-0 w-full object-cover"
+                loading="lazy"
+              />
+            ))}
+          </div>
+          <div className="absolute inset-0 bg-gradient-to-r from-black via-black/65 to-black/20" />
           <div className="relative z-10 max-w-2xl">
             <p className="mb-3 text-[12px] uppercase tracking-[0.14em] text-white/55">
               Real workflows / Live systems
@@ -78,9 +96,9 @@ export function Home() {
               Built for real operations.
             </h2>
             <p className="max-w-xl text-[19px] leading-[1.4] text-white/85 sm:text-[25px]">
-              We work on the factory floor, the matter file, the ledger and the
-              roster. Systems land where the work already happens, beside the
-              tools your team already trusts.
+              We work inside the matter, the ledger, the roster and the
+              production plan. Systems land where the work already happens,
+              beside the tools your team already trusts.
             </p>
             <div className="mt-10 flex flex-wrap gap-2 text-[11px] uppercase tracking-[0.1em] text-white/65">
               <span className="border border-white/25 px-3 py-2">Data</span>
@@ -91,15 +109,19 @@ export function Home() {
           </div>
         </section>
 
-        <HomeSection kicker="Industries" title="Where we go first.">
+        <HomeSection kicker="Industries" title="Different sectors. The same operational friction.">
           <div className="grid gap-8 md:grid-cols-[1.05fr_0.95fr]">
-            <div className="overflow-hidden bg-black">
-              <img
-                src="/images/cnc-manufacturing.jpg"
-                alt="CNC manufacturing floor with staged machined components"
-                className="aspect-[4/3] h-full w-full object-cover transition duration-700 hover:scale-[1.02]"
-                loading="lazy"
-              />
+            <div className="grid aspect-[4/3] grid-cols-2 overflow-hidden bg-black">
+              {INDUSTRIES.map((item) => (
+                <Link key={item.id} to={`/industries#${item.id}`} className="group overflow-hidden">
+                  <img
+                    src={item.image}
+                    alt={item.imageAlt}
+                    className="h-full w-full object-cover transition duration-700 group-hover:scale-[1.035]"
+                    loading="lazy"
+                  />
+                </Link>
+              ))}
             </div>
             <ul className="border-t border-black">
               {INDUSTRIES.map((item, index) => (
@@ -108,13 +130,7 @@ export function Home() {
                     to={`/industries#${item.id}`}
                     className="flex items-start justify-between gap-6 py-5 transition-all hover:pl-2"
                   >
-                    <span
-                      className={
-                        item.featured
-                          ? 'text-[20px] sm:text-[25px]'
-                          : 'text-[17px] text-black/65 sm:text-[20px]'
-                      }
-                    >
+                    <span className="text-[17px] text-black/75 sm:text-[21px]">
                       {item.title}
                     </span>
                     <span className="text-[12px] text-black/35">
@@ -130,9 +146,9 @@ export function Home() {
           </div>
         </HomeSection>
 
-        <HomeSection kicker="Selected work" title="Systems shaped around live operations.">
+        <HomeSection kicker="Selected work" title="Systems shaped around real workflows.">
           <div className="space-y-0 border-t border-black">
-            {WORK_ITEMS.slice(0, 3).map((item) => (
+            {featuredWork.map((item) => (
               <Link
                 key={item.id}
                 to={`/work#${item.id}`}

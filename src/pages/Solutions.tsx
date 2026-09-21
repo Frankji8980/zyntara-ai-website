@@ -18,7 +18,7 @@ export function Solutions() {
             Operating model
           </p>
           <div className="grid gap-6 text-[17px] sm:grid-cols-[1fr_auto_1fr_auto_1fr] sm:items-center sm:text-[19px]">
-            <p>Documents / Email / ERP / MES</p>
+            <p>Documents / Email / CRM / Practice systems</p>
             <span className="hidden text-white/35 sm:block">→</span>
             <p>Operational software + AI</p>
             <span className="hidden text-white/35 sm:block">→</span>
