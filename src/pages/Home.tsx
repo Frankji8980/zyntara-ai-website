@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react'
+import { useState, type ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import { Footer } from '../components/Footer'
 import { Hero } from '../components/Hero'
@@ -32,6 +32,7 @@ function HomeSection({
 }
 
 export function Home() {
+  const [activeIndustry, setActiveIndustry] = useState(0)
   const featuredWorkIds: ReadonlySet<string> = new Set([
     'production-planning-copilot',
     'legal-matter-intelligence',
@@ -71,22 +72,12 @@ export function Home() {
         </HomeSection>
 
         <section className="relative flex min-h-screen items-end overflow-hidden bg-black px-5 py-16 text-white sm:px-8 md:px-10 md:py-20">
-          <div className="absolute inset-0 grid grid-cols-2">
-            {[
-              '/images/industrial-operations.jpg',
-              '/images/legal-operations.jpg',
-              '/images/finance-operations.jpg',
-              '/images/healthcare-operations.jpg',
-            ].map((image) => (
-              <img
-                key={image}
-                src={image}
-                alt=""
-                className="h-full min-h-0 w-full object-cover"
-                loading="lazy"
-              />
-            ))}
-          </div>
+          <img
+            src="/images/financial-intelligence.jpg"
+            alt="AI engineer working with operational data in a Sydney workspace"
+            className="absolute inset-0 h-full w-full object-cover object-center"
+            loading="lazy"
+          />
           <div className="absolute inset-0 bg-gradient-to-r from-black via-black/65 to-black/20" />
           <div className="relative z-10 max-w-2xl">
             <p className="mb-3 text-[12px] uppercase tracking-[0.14em] text-white/55">
@@ -111,26 +102,41 @@ export function Home() {
 
         <HomeSection kicker="Industries" title="Different sectors. The same operational friction.">
           <div className="grid gap-8 md:grid-cols-[1.05fr_0.95fr]">
-            <div className="grid aspect-[4/3] grid-cols-2 overflow-hidden bg-black">
-              {INDUSTRIES.map((item) => (
-                <Link key={item.id} to={`/industries#${item.id}`} className="group overflow-hidden">
-                  <img
-                    src={item.image}
-                    alt={item.imageAlt}
-                    className="h-full w-full object-cover transition duration-700 group-hover:scale-[1.035]"
-                    loading="lazy"
-                  />
-                </Link>
+            <div className="relative aspect-[4/3] overflow-hidden bg-black">
+              {INDUSTRIES.map((item, index) => (
+                <img
+                  key={item.id}
+                  src={item.image}
+                  alt={activeIndustry === index ? item.imageAlt : ''}
+                  className={`absolute inset-0 h-full w-full object-cover transition duration-500 ${
+                    activeIndustry === index
+                      ? 'scale-100 opacity-100'
+                      : 'scale-[1.02] opacity-0'
+                  }`}
+                  loading="lazy"
+                />
               ))}
+              <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/65 to-transparent px-5 pb-5 pt-16 text-[11px] uppercase tracking-[0.12em] text-white/70">
+                {INDUSTRIES[activeIndustry].eyebrow}
+              </div>
             </div>
             <ul className="border-t border-black">
               {INDUSTRIES.map((item, index) => (
                 <li key={item.id} className="border-b border-black/15">
                   <Link
                     to={`/industries#${item.id}`}
-                    className="flex items-start justify-between gap-6 py-5 transition-all hover:pl-2"
+                    onMouseEnter={() => setActiveIndustry(index)}
+                    onFocus={() => setActiveIndustry(index)}
+                    className={`flex items-start justify-between gap-6 py-5 transition-all hover:pl-2 focus:pl-2 ${
+                      activeIndustry === index ? 'text-black' : 'text-black/55'
+                    }`}
                   >
-                    <span className="text-[17px] text-black/75 sm:text-[21px]">
+                    <span className="flex items-center gap-3 text-[17px] sm:text-[21px]">
+                      <span
+                        className={`h-2 w-2 rounded-full bg-[#ff5a2a] transition-opacity ${
+                          activeIndustry === index ? 'opacity-100' : 'opacity-0'
+                        }`}
+                      />
                       {item.title}
                     </span>
                     <span className="text-[12px] text-black/35">
