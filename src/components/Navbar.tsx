@@ -4,7 +4,15 @@ import { NAV_LINKS } from '../lib/content'
 
 export function Navbar() {
   const [open, setOpen] = useState(false)
+  const [scrolled, setScrolled] = useState(false)
   const location = useLocation()
+
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 24)
+    onScroll()
+    window.addEventListener('scroll', onScroll, { passive: true })
+    return () => window.removeEventListener('scroll', onScroll)
+  }, [])
 
   useEffect(() => {
     setOpen(false)
@@ -19,7 +27,11 @@ export function Navbar() {
 
   return (
     <>
-      <header className="fixed top-0 left-0 z-50 w-full px-5 py-4 sm:px-8 sm:py-5">
+      <header
+        className={`fixed top-0 left-0 z-50 w-full px-5 py-4 transition duration-300 sm:px-8 sm:py-5 ${
+          scrolled ? 'border-b border-black/10 bg-white/90 backdrop-blur-md' : ''
+        }`}
+      >
         <nav className="flex items-center justify-between">
           <Link
             to="/"
@@ -35,7 +47,9 @@ export function Navbar() {
                 {index > 0 ? <span>, </span> : null}
                 <Link
                   to={link.to}
-                  className="hover:opacity-60 transition-opacity"
+                  className={`transition-opacity hover:opacity-60 ${
+                    location.pathname === link.to ? 'underline underline-offset-4' : ''
+                  }`}
                 >
                   {link.label}
                 </Link>
@@ -47,7 +61,7 @@ export function Navbar() {
             to="/contact"
             className="hidden text-[23px] text-black underline underline-offset-2 hover:opacity-60 transition-opacity lg:inline"
           >
-            Get in touch
+            Book a consultation
           </Link>
 
           <button
@@ -96,7 +110,7 @@ export function Navbar() {
           to="/contact"
           className="text-[32px] font-medium text-black underline underline-offset-2"
         >
-          Get in touch
+          Book a consultation
         </Link>
       </div>
     </>

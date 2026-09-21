@@ -17,6 +17,14 @@ export function Footer() {
         <Link to="/contact" className="underline underline-offset-2">
           Get in touch
         </Link>
+        <span className="mx-3 text-black/25">/</span>
+        <Link to="/privacy" className="underline underline-offset-2">
+          Privacy
+        </Link>
+        <span className="mx-3 text-black/25">/</span>
+        <Link to="/terms" className="underline underline-offset-2">
+          Terms
+        </Link>
       </p>
     </footer>
   )

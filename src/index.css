@@ -10,6 +10,29 @@ body {
   margin: 0;
   color: #000;
   background: #fff;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+::selection {
+  color: #fff;
+  background: #ef6c35;
+}
+
+a,
+button,
+input,
+textarea {
+  border-radius: 0;
+}
+
+:focus-visible {
+  outline: 2px solid #ef6c35;
+  outline-offset: 3px;
 }
 
 #root {
@@ -28,4 +51,18 @@ body {
 
 .cursor-blink {
   animation: blink 1s step-end infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }

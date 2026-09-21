@@ -14,12 +14,12 @@ export function PageShell({
 }) {
   return (
     <main className="relative z-10 min-h-screen bg-white px-5 pb-24 pt-28 sm:px-8 md:px-10">
-      <div className="mx-auto max-w-3xl">
+      <div className="mx-auto max-w-5xl">
         {kicker ? (
           <p className="mb-4 text-[15px] text-black/60">{kicker}</p>
         ) : null}
         <h1
-          className="mb-10 text-[32px] leading-[1.2] tracking-tight sm:text-[42px]"
+          className="mb-12 max-w-4xl text-[34px] leading-[1.08] tracking-tight sm:text-[52px]"
           style={{ fontFamily: 'var(--font-heading)' }}
         >
           {title}
@@ -50,7 +50,7 @@ export function TextPill({
   )
 }
 
-export function EmailPill() {
+export function EmailPill({ inverse = false }: { inverse?: boolean }) {
   const [copied, setCopied] = useState(false)
 
   const copyEmail = async () => {
@@ -67,7 +67,11 @@ export function EmailPill() {
     <button
       type="button"
       onClick={copyEmail}
-      className={`${pillClass} gap-2 border border-black bg-black text-white hover:bg-white hover:text-black sm:gap-3`}
+      className={`${pillClass} gap-2 sm:gap-3 ${
+        inverse
+          ? 'border border-white bg-transparent text-white hover:bg-white hover:text-black'
+          : 'border border-black bg-black text-white hover:bg-white hover:text-black'
+      }`}
     >
       <span>
         Reach us: <span className="underline underline-offset-1">{EMAIL}</span>
