@@ -4,7 +4,7 @@ import { EMAIL, SLOGAN } from '../lib/content'
 export function Footer() {
   return (
     <footer className="relative z-10 border-t border-black/10 bg-white px-5 py-8 text-[13px] text-black/70 sm:px-8 md:px-10 sm:text-[15px]">
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+      <div className="mx-auto flex max-w-[1200px] flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <p>{SLOGAN}</p>
         <p>
           Zyntara AI · Australia ·{' '}
@@ -13,7 +13,7 @@ export function Footer() {
           </a>
         </p>
       </div>
-      <p className="mt-4">
+      <p className="mx-auto mt-6 max-w-[1200px] border-t border-black/10 pt-5 text-[12px]">
         <Link to="/contact" className="underline underline-offset-2">
           Get in touch
         </Link>

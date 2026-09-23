@@ -1,227 +1,245 @@
-import { useState, type ReactNode } from 'react'
+import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import { Footer } from '../components/Footer'
 import { Hero } from '../components/Hero'
 import { ScrubVideo } from '../components/ScrubVideo'
-import { EmailPill, TextPill } from '../components/PageShell'
+import { EmailPill } from '../components/PageShell'
 import { INDUSTRIES, SOLUTIONS, STEPS, WORK_ITEMS } from '../lib/content'
 
-function HomeSection({
-  kicker,
-  title,
-  children,
-}: {
+function HomeSection({ id, kicker, title, children, wide = false }: {
+  id: string
   kicker: string
   title: string
   children: ReactNode
+  wide?: boolean
 }) {
   return (
-    <section className="flex min-h-screen flex-col justify-center px-5 py-20 sm:px-8 md:px-10">
-      <div className="max-w-3xl">
-        <p className="mb-3 text-[15px] text-black/55">{kicker}</p>
-        <h2
-          className="mb-8 text-[28px] leading-[1.2] sm:text-[36px]"
-          style={{ fontWeight: 400 }}
-        >
-          {title}
-        </h2>
-        {children}
+    <section className={`home-section${wide ? ' home-section-wide' : ''}`} aria-labelledby={`${id}-title`}>
+      <div className="home-container home-section-grid">
+        <header className="home-section-heading">
+          <p className="home-eyebrow">{kicker}</p>
+          <h2 id={`${id}-title`}>{title}</h2>
+        </header>
+        <div className="home-section-content">{children}</div>
       </div>
     </section>
   )
 }
 
-export function Home() {
+function SectionLink({ to, children }: { to: string; children: ReactNode }) {
+  return <Link to={to} className="home-section-link">{children}<span aria-hidden="true">↗</span></Link>
+}
+
+function IndustryPreview() {
   const [activeIndustry, setActiveIndustry] = useState(0)
+  const [paused, setPaused] = useState(false)
+  const [mobile, setMobile] = useState(false)
+  const [reducedMotion, setReducedMotion] = useState(true)
+  const [visible, setVisible] = useState(false)
+  const [foreground, setForeground] = useState(false)
+  const previewRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const mobileQuery = window.matchMedia('(max-width: 767px)')
+    const motionQuery = window.matchMedia('(prefers-reduced-motion: reduce)')
+    const syncPreferences = () => {
+      setMobile(mobileQuery.matches)
+      setReducedMotion(motionQuery.matches)
+    }
+    const syncVisibility = () => setForeground(document.visibilityState === 'visible')
+    syncPreferences()
+    syncVisibility()
+    mobileQuery.addEventListener('change', syncPreferences)
+    motionQuery.addEventListener('change', syncPreferences)
+    document.addEventListener('visibilitychange', syncVisibility)
+    const observer = new IntersectionObserver(([entry]) => {
+      setVisible(entry.isIntersecting && entry.intersectionRatio >= 0.35)
+    }, { threshold: [0, 0.35] })
+    if (previewRef.current) observer.observe(previewRef.current)
+    return () => {
+      observer.disconnect()
+      mobileQuery.removeEventListener('change', syncPreferences)
+      motionQuery.removeEventListener('change', syncPreferences)
+      document.removeEventListener('visibilitychange', syncVisibility)
+    }
+  }, [])
+
+  useEffect(() => {
+    if (!mobile || reducedMotion || !visible || !foreground || paused) return
+    const timer = window.setInterval(() => {
+      setActiveIndustry((index) => (index + 1) % INDUSTRIES.length)
+    }, 4500)
+    return () => window.clearInterval(timer)
+  }, [mobile, reducedMotion, visible, foreground, paused])
+
+  const selectIndustry = (index: number) => {
+    setPaused(true)
+    setActiveIndustry(index)
+  }
+
+  return (
+    <div
+      className="industry-showcase"
+      onPointerDownCapture={(event) => {
+        if (!(event.target as HTMLElement).closest('[data-rotation-control]')) setPaused(true)
+      }}
+      onFocusCapture={(event) => {
+        if (!(event.target as HTMLElement).closest('[data-rotation-control]')) setPaused(true)
+      }}
+    >
+      <div>
+        <div className="industry-image" ref={previewRef} id="industry-preview">
+          {INDUSTRIES.map((item, index) => (
+            <img
+              key={item.id}
+              src={item.image}
+              alt={activeIndustry === index ? item.imageAlt : ''}
+              aria-hidden={activeIndustry !== index}
+              className={activeIndustry === index ? 'is-active' : ''}
+              loading="lazy"
+            />
+          ))}
+          <div className="industry-caption">
+            <p>{INDUSTRIES[activeIndustry].title}</p>
+            <span>{INDUSTRIES[activeIndustry].eyebrow}</span>
+          </div>
+        </div>
+        <div className="industry-controls" aria-label="Industry image controls">
+          <div className="industry-selectors">
+            {INDUSTRIES.map((item, index) => (
+              <button
+                key={item.id}
+                type="button"
+                onClick={() => selectIndustry(index)}
+                aria-label={`Show ${item.title} image`}
+                aria-pressed={activeIndustry === index}
+                aria-controls="industry-preview"
+              >{String(index + 1).padStart(2, '0')}</button>
+            ))}
+          </div>
+          {!reducedMotion && (
+            <button
+              type="button"
+              data-rotation-control
+              onClick={() => setPaused((value) => !value)}
+              aria-controls="industry-preview"
+              className="industry-pause"
+            >{paused ? 'Resume rotation' : 'Pause rotation'}</button>
+          )}
+        </div>
+      </div>
+      <div className="industry-directory">
+        <ul>
+          {INDUSTRIES.map((item, index) => (
+            <li key={item.id}>
+              <Link
+                to={`/industries#${item.id}`}
+                onMouseEnter={() => { if (!mobile) selectIndustry(index) }}
+                onFocus={() => selectIndustry(index)}
+                className={`industry-link${activeIndustry === index ? ' is-active' : ''}`}
+              >
+                <span className="home-index">{String(index + 1).padStart(2, '0')}</span>
+                <span>{item.title}</span>
+                <span aria-hidden="true">↗</span>
+              </Link>
+            </li>
+          ))}
+        </ul>
+        <SectionLink to="/industries">See industries</SectionLink>
+      </div>
+    </div>
+  )
+}
+
+export function Home() {
   const featuredWorkIds: ReadonlySet<string> = new Set([
-    'production-planning-copilot',
-    'legal-matter-intelligence',
-    'finance-operations-automation',
-    'healthcare-intake-roster',
+    'production-planning-copilot', 'legal-matter-intelligence',
+    'finance-operations-automation', 'healthcare-intake-roster',
   ])
   const featuredWork = WORK_ITEMS.filter((item) => featuredWorkIds.has(item.id))
 
   return (
-    <div className="relative">
+    <div className="home-page">
       <ScrubVideo />
-      <Hero />
-
-      <div className="relative z-10 bg-white">
-        <HomeSection kicker="What we build" title="Four things you can buy.">
-          <ul className="border-t border-black">
-            {SOLUTIONS.map((item, index) => (
-              <li key={item.id} className="border-b border-black/15">
-                <Link
-                  to={`/solutions#${item.id}`}
-                  className="group grid gap-3 py-6 transition-all hover:pl-2 sm:grid-cols-[44px_1fr_1fr]"
-                >
-                  <span className="text-[12px] text-black/40">
-                    {String(index + 1).padStart(2, '0')}
-                  </span>
-                  <span className="text-[19px] sm:text-[23px]">{item.title}</span>
-                  <span className="text-[14px] leading-relaxed text-black/50 sm:text-[16px]">
-                    {item.line}
-                  </span>
-                </Link>
-              </li>
-            ))}
-          </ul>
-          <div className="mt-10">
-            <TextPill to="/solutions">Explore solutions</TextPill>
-          </div>
-        </HomeSection>
-
-        <section className="relative flex min-h-screen items-end overflow-hidden bg-black px-5 py-16 text-white sm:px-8 md:px-10 md:py-20">
-          <img
-            src="/images/financial-intelligence.jpg"
-            alt="AI engineer working with operational data in a Sydney workspace"
-            className="absolute inset-0 h-full w-full object-cover object-center"
-            loading="lazy"
-          />
-          <div className="absolute inset-0 bg-gradient-to-r from-black via-black/65 to-black/20" />
-          <div className="relative z-10 max-w-2xl">
-            <p className="mb-3 text-[12px] uppercase tracking-[0.14em] text-white/55">
-              Real workflows / Live systems
-            </p>
-            <h2 className="mb-8 text-[34px] leading-[1.08] tracking-tight sm:text-[50px]">
-              Built for real operations.
-            </h2>
-            <p className="max-w-xl text-[19px] leading-[1.4] text-white/85 sm:text-[25px]">
-              We work inside the matter, the ledger, the roster and the
-              production plan. Systems land where the work already happens,
-              beside the tools your team already trusts.
-            </p>
-            <div className="mt-10 flex flex-wrap gap-2 text-[11px] uppercase tracking-[0.1em] text-white/65">
-              <span className="border border-white/25 px-3 py-2">Data</span>
-              <span className="border border-white/25 px-3 py-2">Workflow</span>
-              <span className="border border-white/25 px-3 py-2">Decision</span>
-              <span className="border border-white/25 px-3 py-2">Action</span>
-            </div>
-          </div>
-        </section>
-
-        <HomeSection kicker="Industries" title="Different sectors. The same operational friction.">
-          <div className="grid gap-8 md:grid-cols-[1.05fr_0.95fr]">
-            <div className="relative aspect-[4/3] overflow-hidden bg-black">
-              {INDUSTRIES.map((item, index) => (
-                <img
-                  key={item.id}
-                  src={item.image}
-                  alt={activeIndustry === index ? item.imageAlt : ''}
-                  className={`absolute inset-0 h-full w-full object-cover transition duration-500 ${
-                    activeIndustry === index
-                      ? 'scale-100 opacity-100'
-                      : 'scale-[1.02] opacity-0'
-                  }`}
-                  loading="lazy"
-                />
-              ))}
-              <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/65 to-transparent px-5 pb-5 pt-16 text-[11px] uppercase tracking-[0.12em] text-white/70">
-                {INDUSTRIES[activeIndustry].eyebrow}
-              </div>
-            </div>
-            <ul className="border-t border-black">
-              {INDUSTRIES.map((item, index) => (
-                <li key={item.id} className="border-b border-black/15">
-                  <Link
-                    to={`/industries#${item.id}`}
-                    onMouseEnter={() => setActiveIndustry(index)}
-                    onFocus={() => setActiveIndustry(index)}
-                    className={`flex items-start justify-between gap-6 py-5 transition-all hover:pl-2 focus:pl-2 ${
-                      activeIndustry === index ? 'text-black' : 'text-black/55'
-                    }`}
-                  >
-                    <span className="flex items-center gap-3 text-[17px] sm:text-[21px]">
-                      <span
-                        className={`h-2 w-2 rounded-full bg-[#ff5a2a] transition-opacity ${
-                          activeIndustry === index ? 'opacity-100' : 'opacity-0'
-                        }`}
-                      />
-                      {item.title}
-                    </span>
-                    <span className="text-[12px] text-black/35">
-                      {String(index + 1).padStart(2, '0')}
-                    </span>
+      <main>
+        <Hero />
+        <div className="home-sections">
+          <HomeSection id="solutions" kicker="What we build" title="Four things you can buy.">
+            <ul className="solution-list">
+              {SOLUTIONS.map((item, index) => (
+                <li key={item.id}>
+                  <Link to={`/solutions#${item.id}`} className="solution-link">
+                    <span className="home-index">{String(index + 1).padStart(2, '0')}</span>
+                    <span><h3>{item.title}</h3><p>{item.line}</p></span>
+                    <span className="home-link-arrow" aria-hidden="true">↗</span>
                   </Link>
                 </li>
               ))}
             </ul>
-          </div>
-          <div className="mt-10">
-            <TextPill to="/industries">See industries</TextPill>
-          </div>
-        </HomeSection>
+            <SectionLink to="/solutions">Explore solutions</SectionLink>
+          </HomeSection>
 
-        <HomeSection kicker="Selected work" title="Systems shaped around real workflows.">
-          <div className="space-y-0 border-t border-black">
-            {featuredWork.map((item) => (
-              <Link
-                key={item.id}
-                to={`/work#${item.id}`}
-                className="grid gap-3 border-b border-black/15 py-6 transition-opacity hover:opacity-55 sm:grid-cols-[40px_1fr_1fr]"
-              >
-                <span className="text-[13px] text-black/45">{item.number}</span>
-                <span className="text-[18px] sm:text-[22px]">{item.title}</span>
-                <span className="text-[14px] leading-relaxed text-black/55 sm:text-[16px]">
-                  {item.industry} / {item.stage}
-                </span>
-              </Link>
-            ))}
-          </div>
-          <div className="mt-10">
-            <TextPill to="/work">See our work</TextPill>
-          </div>
-        </HomeSection>
-
-        <HomeSection
-          kicker="How we work"
-          title="Discover. Build. Deploy. Improve."
-        >
-          <ol className="grid gap-px bg-black/15 sm:grid-cols-2">
-            {STEPS.map((step, index) => (
-              <li key={step.title} className="min-h-52 bg-white p-6 sm:p-8">
-                <p className="mb-10 text-[12px] text-black/40">
-                  {String(index + 1).padStart(2, '0')}
-                </p>
-                <p className="text-[22px] sm:text-[26px]">{step.title}</p>
-                <p className="mt-3 text-[15px] leading-relaxed text-black/65 sm:text-[16px]">
-                  {step.body}
-                </p>
-              </li>
-            ))}
-          </ol>
-          <div className="mt-10">
-            <TextPill to="/approach">How we deploy</TextPill>
-          </div>
-        </HomeSection>
-
-        <section className="flex min-h-[70vh] flex-col justify-center bg-black px-5 py-20 text-white sm:px-8 md:px-10">
-          <div className="max-w-xl">
-            <p className="mb-3 text-[12px] uppercase tracking-[0.14em] text-white/45">
-              Next workflow
-            </p>
-            <h2 className="mb-6 text-[34px] leading-[1.08] sm:text-[50px]">
-              Show us a workflow.
-            </h2>
-            <p
-              className="mb-8"
-              style={{
-                fontSize: 'clamp(18px, 4vw, 26px)',
-                lineHeight: 1.35,
-              }}
-            >
-              Tell us where work gets stuck. We will tell you if we can put
-              software into production around it.
-            </p>
-            <div className="flex flex-wrap gap-y-1">
-              <TextPill to="/contact">Get in touch</TextPill>
-              <EmailPill inverse />
+          <section className="home-operations" aria-labelledby="operations-title">
+            <img src="/images/financial-intelligence.jpg" alt="AI engineer working with operational data in a Sydney workspace" loading="lazy" />
+            <div className="home-container operations-content">
+              <p className="home-eyebrow">Real workflows / Live systems</p>
+              <h2 id="operations-title">Built for real operations.</h2>
+              <p className="operations-description">
+                We work inside the matter, the ledger, the roster and the
+                production plan. Systems land where the work already happens,
+                beside the tools your team already trusts.
+              </p>
+              <ul className="operations-flow" aria-label="Operational workflow">
+                {['Data', 'Workflow', 'Decision', 'Action'].map((item) => <li key={item}>{item}</li>)}
+              </ul>
             </div>
-          </div>
-        </section>
+          </section>
 
-        <Footer />
-      </div>
+          <HomeSection id="industries" kicker="Industries" title="Different sectors. The same operational friction." wide>
+            <IndustryPreview />
+          </HomeSection>
+
+          <HomeSection id="work" kicker="Selected work" title="Systems shaped around real workflows." wide>
+            <div className="work-list">
+              {featuredWork.map((item) => (
+                <Link key={item.id} to={`/work#${item.id}`} className="work-link">
+                  <span className="home-index">{item.number}</span>
+                  <span className="work-info"><h3>{item.title}</h3><span><p>{item.industry}</p><span className="work-stage">{item.stage}</span></span></span>
+                  <span className="home-link-arrow" aria-hidden="true">↗</span>
+                </Link>
+              ))}
+            </div>
+            <SectionLink to="/work">See our work</SectionLink>
+          </HomeSection>
+
+          <HomeSection id="approach" kicker="How we work" title="Discover. Build. Deploy. Improve." wide>
+            <ol className="home-steps">
+              {STEPS.map((step, index) => (
+                <li key={step.title}>
+                  <span className="home-index">{String(index + 1).padStart(2, '0')}</span>
+                  <h3>{step.title}</h3>
+                  <p>{step.body}</p>
+                </li>
+              ))}
+            </ol>
+            <SectionLink to="/approach">How we deploy</SectionLink>
+          </HomeSection>
+
+          <section className="home-contact" aria-labelledby="contact-title">
+            <div className="home-container home-contact-grid">
+              <div><p className="home-eyebrow">Next workflow</p><h2 id="contact-title">Show us a workflow.</h2></div>
+              <div>
+                <p className="home-contact-description">Tell us where work gets stuck. We will tell you if we can put software into production around it.</p>
+                <div className="home-contact-actions">
+                  <Link to="/contact" className="home-button home-button-light">Get in touch <span aria-hidden="true">↗</span></Link>
+                  <EmailPill inverse />
+                </div>
+              </div>
+            </div>
+          </section>
+        </div>
+      </main>
+      <div className="home-footer"><Footer /></div>
     </div>
   )
 }

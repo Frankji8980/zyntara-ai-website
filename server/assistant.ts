@@ -1,5 +1,3 @@
-import OpenAI from 'openai'
-
 export type AssistantMessage = {
   role: 'user' | 'assistant'
   content: string
@@ -62,22 +60,37 @@ ${KNOWLEDGE}
 export function normaliseMessages(value: unknown): AssistantMessage[] {
   if (!Array.isArray(value)) return []
 
-  return value
-    .filter(
+  if (!value.every(
       (item): item is AssistantMessage =>
         typeof item === 'object' &&
         item !== null &&
         ('role' in item) &&
         (item.role === 'user' || item.role === 'assistant') &&
         ('content' in item) &&
-        typeof item.content === 'string',
-    )
+        typeof item.content === 'string' && item.content.trim().length > 0,
+    )) return []
+
+  return value
     .slice(-10)
     .map((item) => ({
       role: item.role,
       content: item.content.trim().slice(0, 1600),
     }))
     .filter((item) => item.content.length > 0)
+}
+
+export const ASSISTANT_TIMEOUT_MS = 20_000
+
+export class AssistantRequestError extends Error {
+  readonly code: 'timeout' | 'network_error' | 'upstream_error' | 'invalid_response' | 'empty_response'
+  readonly upstreamStatus?: number
+
+  constructor(code: AssistantRequestError['code'], upstreamStatus?: number) {
+    super(`Assistant request failed: ${code}`)
+    this.name = 'AssistantRequestError'
+    this.code = code
+    this.upstreamStatus = upstreamStatus
+  }
 }
 
 export async function createAssistantReply({
@@ -91,17 +104,67 @@ export async function createAssistantReply({
   messages: AssistantMessage[]
   page?: string
 }) {
-  const client = new OpenAI({ apiKey })
   const context = page ? `The visitor is currently viewing: ${page}` : ''
-
-  const response = await client.responses.create({
-    model,
-    reasoning: { effort: 'low' },
-    instructions: `${INSTRUCTIONS}\n${context}`,
-    input: messages,
-    max_output_tokens: 500,
-    store: false,
+  const controller = new AbortController()
+  // Leave time for a JSON error before Vercel's 30-second function deadline.
+  const timeout = setTimeout(() => controller.abort(), ASSISTANT_TIMEOUT_MS)
+  try {
+  const response = await fetch('https://api.openai.com/v1/responses', {
+    signal: controller.signal,
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      model,
+      reasoning: { effort: 'low' },
+      instructions: `${INSTRUCTIONS}\n${context}`,
+      input: messages,
+      max_output_tokens: 500,
+      store: false,
+    }),
   })
 
-  return response.output_text.trim()
+  if (!response.ok) {
+    // Do not read or propagate provider error bodies: they can contain request data.
+    await response.body?.cancel()
+    throw new AssistantRequestError('upstream_error', response.status)
+  }
+
+  let data: unknown
+  try {
+    data = await response.json()
+  } catch {
+    throw new AssistantRequestError('invalid_response')
+  }
+  if (!data || typeof data !== 'object' || !('output' in data) || !Array.isArray(data.output)) {
+    throw new AssistantRequestError('invalid_response')
+  }
+
+  const outputText = data.output
+    .flatMap((item: unknown) =>
+      item && typeof item === 'object' && 'content' in item && Array.isArray(item.content)
+        ? item.content : [],
+    )
+    .filter((item: unknown): item is { type: 'output_text'; text: string } =>
+      !!item && typeof item === 'object' && 'type' in item && item.type === 'output_text' &&
+      'text' in item && typeof item.text === 'string',
+    )
+    .map((item) => item.text)
+    .join('\n')
+    .trim()
+
+  if (!outputText) {
+    throw new AssistantRequestError('empty_response')
+  }
+
+  return outputText
+  } catch (error) {
+    if (controller.signal.aborted) throw new AssistantRequestError('timeout')
+    if (error instanceof AssistantRequestError) throw error
+    throw new AssistantRequestError('network_error')
+  } finally {
+    clearTimeout(timeout)
+  }
 }

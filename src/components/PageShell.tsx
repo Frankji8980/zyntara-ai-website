@@ -14,13 +14,12 @@ export function PageShell({
 }) {
   return (
     <main className="relative z-10 min-h-screen bg-white px-5 pb-24 pt-28 sm:px-8 md:px-10">
-      <div className="mx-auto max-w-5xl">
+      <div className="mx-auto max-w-[1200px]">
         {kicker ? (
-          <p className="mb-4 text-[15px] text-black/60">{kicker}</p>
+          <p className="mb-5 flex items-center gap-3 text-[11px] uppercase tracking-[0.18em] text-black/60"><span aria-hidden="true" className="h-1.5 w-1.5 bg-[#ef6c35]" />{kicker}</p>
         ) : null}
         <h1
-          className="mb-12 max-w-4xl text-[34px] leading-[1.08] tracking-tight sm:text-[52px]"
-          style={{ fontFamily: 'var(--font-heading)' }}
+          className="mb-12 max-w-4xl text-[clamp(34px,4.6vw,68px)] leading-[1.05] tracking-[-0.035em]"
         >
           {title}
         </h1>

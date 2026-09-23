@@ -18,6 +18,33 @@ const WELCOME: Message = {
     "Tell me about a workflow that is slowing your business down. I can help map the problem and point you to relevant Zyntara work.",
 }
 
+const UNAVAILABLE = 'The assistant is temporarily unavailable. Please try again shortly.'
+class AssistantDisplayError extends Error {}
+
+export async function readAssistantResponse(response: Response): Promise<string> {
+  // Platform/proxy failures may be plain text or HTML. Never display their bodies.
+  if (!response.ok) {
+    throw new AssistantDisplayError(
+      response.status === 429
+        ? 'Too many requests. Please try again shortly.'
+        : response.status === 504
+          ? 'The assistant took too long to respond. Please try again.'
+          : UNAVAILABLE,
+    )
+  }
+  let data: unknown
+  try {
+    data = await response.json()
+  } catch {
+    throw new AssistantDisplayError(UNAVAILABLE)
+  }
+  if (!data || typeof data !== 'object' || Array.isArray(data) ||
+    !('reply' in data) || typeof data.reply !== 'string' || !data.reply.trim()) {
+    throw new AssistantDisplayError(UNAVAILABLE)
+  }
+  return data.reply.trim()
+}
+
 export function WorkflowAssistant() {
   const location = useLocation()
   const [open, setOpen] = useState(false)
@@ -49,32 +76,34 @@ export function WorkflowAssistant() {
     setError('')
     setLoading(true)
 
+    const controller = new AbortController()
+    const timeout = window.setTimeout(() => controller.abort(), 35_000)
     try {
       const response = await fetch('/api/chat', {
+        signal: controller.signal,
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          messages: nextMessages.slice(1),
+          messages: nextMessages.slice(1).slice(-10),
           page: `${location.pathname}${location.hash}`,
         }),
       })
-      const data = await response.json()
-
-      if (!response.ok || typeof data.reply !== 'string') {
-        throw new Error(data.error || 'Assistant request failed')
-      }
+      const reply = await readAssistantResponse(response)
 
       setMessages((current) => [
         ...current,
-        { role: 'assistant', content: data.reply },
+        { role: 'assistant', content: reply },
       ])
     } catch (requestError) {
       setError(
-        requestError instanceof Error
+        controller.signal.aborted
+          ? 'The assistant took too long to respond. Please try again.'
+          : requestError instanceof AssistantDisplayError
           ? requestError.message
-          : 'The assistant is temporarily unavailable.',
+          : UNAVAILABLE,
       )
     } finally {
+      window.clearTimeout(timeout)
       setLoading(false)
     }
   }

@@ -23,16 +23,13 @@ npm run build
 npm run preview
 ```
 
-## Deploy (recommended)
+## Deployment and assistant
 
-Do **not** treat GitHub Pages as the long-term host. `BrowserRouter` needs a server-side SPA fallback, and GitHub Pages is brittle for that.
+Production runs on Vercel with the Vite preset, `npm run build`, and output directory `dist`.
+The assistant runs in the Node server function at `api/chat.ts`. Client routes need the SPA fallback; API routes must reach the function.
 
-Connect this GitHub repository to one of:
+Configure `OPENAI_API_KEY` and `OPENAI_MODEL` as server environment variables in the hosting project. Copy `.env.example` to `.env.local` for local development. Never use a `VITE_` prefix for secrets or commit `.env.local`.
 
-- [Vercel](https://vercel.com) — `vercel.json` already rewrites all routes to `index.html`
-- [Cloudflare Pages](https://pages.cloudflare.com) — `public/_redirects` is included
-- [Netlify](https://netlify.com) — `netlify.toml` is included
+`npm run dev` includes the local assistant middleware. `npm run preview` previews the static frontend only, without the assistant endpoint. The Netlify and Cloudflare redirect files support frontend routing only; the assistant requires a compatible server deployment there.
 
-Then attach the custom domain `zyntaraai.com.au` in that platform.
-
-Framework preset: Vite. Build command: `npm run build`. Output: `dist`.
+After deployment, verify both a direct page URL such as `/industries` and `/api/chat`. A GET to the assistant should return a JSON 405, and a valid POST should return a JSON reply. A platform `FUNCTION_INVOCATION_FAILED` response requires checking function logs; frontend error handling alone does not fix it.

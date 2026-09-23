@@ -30,8 +30,9 @@ export function Contact() {
         <div className="grid gap-16 md:grid-cols-[0.85fr_1.15fr]">
           <div>
             <p className="mb-10 max-w-xl text-[20px] leading-[1.4] sm:text-[26px]">
-              Tell us where work gets stuck — a planning cycle, an inbox, a
-              shop-floor hand-off. If it is a fit, we will say so plainly.
+              Tell us where work gets stuck — client intake, reporting,
+              approvals or a planning cycle. We will help identify a useful
+              starting point and the systems it needs to connect.
             </p>
             <p className="mb-8 text-[13px] uppercase tracking-[0.14em] text-black/45">
               Direct contact
@@ -44,7 +45,7 @@ export function Contact() {
             </a>
             <div className="mt-14 border-t border-black/15 pt-6 text-[14px] leading-relaxed text-black/55">
               <p>Sydney / Australia</p>
-              <p>Manufacturing / Operations / Applied AI</p>
+              <p>Australian SMEs / Software / Applied AI</p>
             </div>
           </div>
 
