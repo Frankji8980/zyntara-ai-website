@@ -9,7 +9,7 @@ const SUPPORTING =
 
 export function Hero() {
   const [copyStatus, setCopyStatus] = useState('')
-  const copyTimer = useRef<ReturnType<typeof window.setTimeout> | null>(null)
+  const copyTimer = useRef<number | null>(null)
 
   useEffect(() => () => {
     if (copyTimer.current !== null) window.clearTimeout(copyTimer.current)
